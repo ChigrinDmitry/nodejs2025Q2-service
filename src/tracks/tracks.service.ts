@@ -7,6 +7,11 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class TracksService {
   private tracks: Track[] = [];
+  private favoritesService: any;
+
+  setDependencies(favoritesService: any) {
+    this.favoritesService = favoritesService;
+  }
 
   create(createTrackDto: CreateTrackDto): Track {
     const track: Track = {
@@ -49,6 +54,11 @@ export class TracksService {
     
     if (index === -1) {
       throw new NotFoundException('Track not found');
+    }
+
+    // Cascade delete
+    if (this.favoritesService) {
+      this.favoritesService.removeTrackById(id);
     }
 
     this.tracks.splice(index, 1);

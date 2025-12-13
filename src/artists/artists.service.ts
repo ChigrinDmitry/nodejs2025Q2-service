@@ -7,6 +7,15 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class ArtistsService {
   private artists: Artist[] = [];
+  private albumsService: any;
+  private tracksService: any;
+  private favoritesService: any;
+
+  setDependencies(albumsService: any, tracksService: any, favoritesService: any) {
+    this.albumsService = albumsService;
+    this.tracksService = tracksService;
+    this.favoritesService = favoritesService;
+  }
 
   create(createArtistDto: CreateArtistDto): Artist {
     const artist: Artist = {
@@ -38,9 +47,7 @@ export class ArtistsService {
       throw new NotFoundException('Artist not found');
     }
 
-    artist.name = updateArtistDto.name;
-    artist.grammy = updateArtistDto.grammy;
-
+    Object.assign(artist, updateArtistDto);
     return artist;
   }
 
@@ -51,7 +58,22 @@ export class ArtistsService {
       throw new NotFoundException('Artist not found');
     }
 
+    // Cascade delete: remove references and from favorites
+    if (this.albumsService) {
+      this.albumsService.removeArtistReference(id);
+    }
+    if (this.tracksService) {
+      this.tracksService.removeArtistReference(id);
+    }
+    if (this.favoritesService) {
+      this.favoritesService.removeArtistById(id);
+    }
+
     this.artists.splice(index, 1);
+  }
+
+  exists(id: string): boolean {
+    return this.artists.some(artist => artist.id === id);
   }
 }
 

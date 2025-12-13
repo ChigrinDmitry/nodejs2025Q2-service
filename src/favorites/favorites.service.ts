@@ -102,15 +102,15 @@ export class FavoritesService {
     this.favoriteTracks.delete(id);
   }
 
-  removeArtistReference(artistId: string): void {
+  removeArtistById(artistId: string): void {
     this.favoriteArtists.delete(artistId);
   }
 
-  removeAlbumReference(albumId: string): void {
+  removeAlbumById(albumId: string): void {
     this.favoriteAlbums.delete(albumId);
   }
 
-  removeTrackReference(trackId: string): void {
+  removeTrackById(trackId: string): void {
     this.favoriteTracks.delete(trackId);
   }
 }

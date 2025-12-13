@@ -7,6 +7,13 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class AlbumsService {
   private albums: Album[] = [];
+  private tracksService: any;
+  private favoritesService: any;
+
+  setDependencies(tracksService: any, favoritesService: any) {
+    this.tracksService = tracksService;
+    this.favoritesService = favoritesService;
+  }
 
   create(createAlbumDto: CreateAlbumDto): Album {
     const album: Album = {
@@ -39,10 +46,7 @@ export class AlbumsService {
       throw new NotFoundException('Album not found');
     }
 
-    album.name = updateAlbumDto.name;
-    album.year = updateAlbumDto.year;
-    album.artistId = updateAlbumDto.artistId || null;
-
+    Object.assign(album, updateAlbumDto);
     return album;
   }
 
@@ -53,7 +57,27 @@ export class AlbumsService {
       throw new NotFoundException('Album not found');
     }
 
+    // Cascade delete
+    if (this.tracksService) {
+      this.tracksService.removeAlbumReference(id);
+    }
+    if (this.favoritesService) {
+      this.favoritesService.removeAlbumById(id);
+    }
+
     this.albums.splice(index, 1);
+  }
+
+  removeArtistReference(artistId: string): void {
+    this.albums.forEach(album => {
+      if (album.artistId === artistId) {
+        album.artistId = null;
+      }
+    });
+  }
+
+  exists(id: string): boolean {
+    return this.albums.some(album => album.id === id);
   }
 }
 
