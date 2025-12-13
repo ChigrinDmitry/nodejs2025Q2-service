@@ -48,4 +48,3 @@ export class AlbumsController {
     return this.albumsService.remove(id);
   }
 }
-

@@ -11,6 +11,7 @@ export class ArtistsService {
   private tracksService: any;
   private favoritesService: any;
 
+  // Метод для установки зависимостей (будет вызван из модуля)
   setDependencies(albumsService: any, tracksService: any, favoritesService: any) {
     this.albumsService = albumsService;
     this.tracksService = tracksService;
@@ -33,7 +34,7 @@ export class ArtistsService {
   }
 
   findOne(id: string): Artist {
-    const artist = this.artists.find((artist) => artist.id === id);
+    const artist = this.artists.find(artist => artist.id === id);
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -41,8 +42,8 @@ export class ArtistsService {
   }
 
   update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    const artist = this.artists.find((artist) => artist.id === id);
-
+    const artist = this.artists.find(artist => artist.id === id);
+    
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -52,8 +53,8 @@ export class ArtistsService {
   }
 
   remove(id: string): void {
-    const index = this.artists.findIndex((artist) => artist.id === id);
-
+    const index = this.artists.findIndex(artist => artist.id === id);
+    
     if (index === -1) {
       throw new NotFoundException('Artist not found');
     }
@@ -76,4 +77,3 @@ export class ArtistsService {
     return this.artists.some(artist => artist.id === id);
   }
 }
-

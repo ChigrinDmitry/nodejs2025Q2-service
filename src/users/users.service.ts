@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { User } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -27,23 +23,20 @@ export class UsersService {
   }
 
   findAll(): Omit<User, 'password'>[] {
-    return this.users.map((user) => this.excludePassword(user));
+    return this.users.map(user => this.excludePassword(user));
   }
 
   findOne(id: string): Omit<User, 'password'> {
-    const user = this.users.find((user) => user.id === id);
+    const user = this.users.find(user => user.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return this.excludePassword(user);
   }
 
-  updatePassword(
-    id: string,
-    updatePasswordDto: UpdatePasswordDto,
-  ): Omit<User, 'password'> {
-    const user = this.users.find((user) => user.id === id);
-
+  updatePassword(id: string, updatePasswordDto: UpdatePasswordDto): Omit<User, 'password'> {
+    const user = this.users.find(user => user.id === id);
+    
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -60,8 +53,8 @@ export class UsersService {
   }
 
   remove(id: string): void {
-    const index = this.users.findIndex((user) => user.id === id);
-
+    const index = this.users.findIndex(user => user.id === id);
+    
     if (index === -1) {
       throw new NotFoundException('User not found');
     }

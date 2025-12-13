@@ -1,7 +1,6 @@
 export interface Album {
-  id: string;
+  id: string; // uuid v4
   name: string;
   year: number;
-  artistId: string | null;
+  artistId: string | null; // refers to Artist
 }
-

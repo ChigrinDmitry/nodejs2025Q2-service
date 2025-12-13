@@ -8,4 +8,3 @@ import { AlbumsService } from './albums.service';
   exports: [AlbumsService],
 })
 export class AlbumsModule {}
-

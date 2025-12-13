@@ -8,4 +8,3 @@ import { ArtistsService } from './artists.service';
   exports: [ArtistsService],
 })
 export class ArtistsModule {}
-

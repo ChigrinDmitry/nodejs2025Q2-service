@@ -32,7 +32,7 @@ export class AlbumsService {
   }
 
   findOne(id: string): Album {
-    const album = this.albums.find((album) => album.id === id);
+    const album = this.albums.find(album => album.id === id);
     if (!album) {
       throw new NotFoundException('Album not found');
     }
@@ -40,8 +40,8 @@ export class AlbumsService {
   }
 
   update(id: string, updateAlbumDto: UpdateAlbumDto): Album {
-    const album = this.albums.find((album) => album.id === id);
-
+    const album = this.albums.find(album => album.id === id);
+    
     if (!album) {
       throw new NotFoundException('Album not found');
     }
@@ -51,8 +51,8 @@ export class AlbumsService {
   }
 
   remove(id: string): void {
-    const index = this.albums.findIndex((album) => album.id === id);
-
+    const index = this.albums.findIndex(album => album.id === id);
+    
     if (index === -1) {
       throw new NotFoundException('Album not found');
     }
@@ -80,4 +80,3 @@ export class AlbumsService {
     return this.albums.some(album => album.id === id);
   }
 }
-

@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Favorites } from './interfaces/favorites.interface';
+import { FavoritesResponse } from './interfaces/favorites-response.interface';
 import { ArtistsService } from '../artists/artists.service';
 import { AlbumsService } from '../albums/albums.service';
 import { TracksService } from '../tracks/tracks.service';
-import { Favorites } from './interfaces/favorites.interface';
 
 @Injectable()
 export class FavoritesService {
-  private favoriteArtists: Set<string> = new Set();
-  private favoriteAlbums: Set<string> = new Set();
-  private favoriteTracks: Set<string> = new Set();
+  private favorites: Favorites = {
+    artists: [],
+    albums: [],
+    tracks: [],
+  };
 
   constructor(
     private readonly artistsService: ArtistsService,
@@ -16,8 +19,8 @@ export class FavoritesService {
     private readonly tracksService: TracksService,
   ) {}
 
-  findAll(): Favorites {
-    const artists = Array.from(this.favoriteArtists)
+  findAll(): FavoritesResponse {
+    const artists = this.favorites.artists
       .map(id => {
         try {
           return this.artistsService.findOne(id);
@@ -27,7 +30,7 @@ export class FavoritesService {
       })
       .filter(artist => artist !== null);
 
-    const albums = Array.from(this.favoriteAlbums)
+    const albums = this.favorites.albums
       .map(id => {
         try {
           return this.albumsService.findOne(id);
@@ -37,7 +40,7 @@ export class FavoritesService {
       })
       .filter(album => album !== null);
 
-    const tracks = Array.from(this.favoriteTracks)
+    const tracks = this.favorites.tracks
       .map(id => {
         try {
           return this.tracksService.findOne(id);
@@ -47,71 +50,81 @@ export class FavoritesService {
       })
       .filter(track => track !== null);
 
-    return {
-      artists,
-      albums,
-      tracks,
-    };
-  }
-
-  addArtist(id: string): void {
-    try {
-      this.artistsService.findOne(id);
-      this.favoriteArtists.add(id);
-    } catch {
-      throw new UnprocessableEntityException('Artist not found');
-    }
-  }
-
-  removeArtist(id: string): void {
-    if (!this.favoriteArtists.has(id)) {
-      throw new NotFoundException('Artist not found in favorites');
-    }
-    this.favoriteArtists.delete(id);
-  }
-
-  addAlbum(id: string): void {
-    try {
-      this.albumsService.findOne(id);
-      this.favoriteAlbums.add(id);
-    } catch {
-      throw new UnprocessableEntityException('Album not found');
-    }
-  }
-
-  removeAlbum(id: string): void {
-    if (!this.favoriteAlbums.has(id)) {
-      throw new NotFoundException('Album not found in favorites');
-    }
-    this.favoriteAlbums.delete(id);
+    return { artists, albums, tracks };
   }
 
   addTrack(id: string): void {
-    try {
-      this.tracksService.findOne(id);
-      this.favoriteTracks.add(id);
-    } catch {
-      throw new UnprocessableEntityException('Track not found');
+    if (!this.tracksService.exists(id)) {
+      throw new UnprocessableEntityException('Track does not exist');
+    }
+
+    if (!this.favorites.tracks.includes(id)) {
+      this.favorites.tracks.push(id);
     }
   }
 
   removeTrack(id: string): void {
-    if (!this.favoriteTracks.has(id)) {
-      throw new NotFoundException('Track not found in favorites');
+    const index = this.favorites.tracks.indexOf(id);
+    if (index === -1) {
+      throw new NotFoundException('Track is not in favorites');
     }
-    this.favoriteTracks.delete(id);
+    this.favorites.tracks.splice(index, 1);
   }
 
-  removeArtistById(artistId: string): void {
-    this.favoriteArtists.delete(artistId);
+  addAlbum(id: string): void {
+    if (!this.albumsService.exists(id)) {
+      throw new UnprocessableEntityException('Album does not exist');
+    }
+
+    if (!this.favorites.albums.includes(id)) {
+      this.favorites.albums.push(id);
+    }
   }
 
-  removeAlbumById(albumId: string): void {
-    this.favoriteAlbums.delete(albumId);
+  removeAlbum(id: string): void {
+    const index = this.favorites.albums.indexOf(id);
+    if (index === -1) {
+      throw new NotFoundException('Album is not in favorites');
+    }
+    this.favorites.albums.splice(index, 1);
   }
 
-  removeTrackById(trackId: string): void {
-    this.favoriteTracks.delete(trackId);
+  addArtist(id: string): void {
+    if (!this.artistsService.exists(id)) {
+      throw new UnprocessableEntityException('Artist does not exist');
+    }
+
+    if (!this.favorites.artists.includes(id)) {
+      this.favorites.artists.push(id);
+    }
+  }
+
+  removeArtist(id: string): void {
+    const index = this.favorites.artists.indexOf(id);
+    if (index === -1) {
+      throw new NotFoundException('Artist is not in favorites');
+    }
+    this.favorites.artists.splice(index, 1);
+  }
+
+  removeArtistById(id: string): void {
+    const index = this.favorites.artists.indexOf(id);
+    if (index !== -1) {
+      this.favorites.artists.splice(index, 1);
+    }
+  }
+
+  removeAlbumById(id: string): void {
+    const index = this.favorites.albums.indexOf(id);
+    if (index !== -1) {
+      this.favorites.albums.splice(index, 1);
+    }
+  }
+
+  removeTrackById(id: string): void {
+    const index = this.favorites.tracks.indexOf(id);
+    if (index !== -1) {
+      this.favorites.tracks.splice(index, 1);
+    }
   }
 }
-

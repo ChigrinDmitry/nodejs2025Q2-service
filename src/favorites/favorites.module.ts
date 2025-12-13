@@ -12,4 +12,3 @@ import { TracksModule } from '../tracks/tracks.module';
   exports: [FavoritesService],
 })
 export class FavoritesModule {}
-
