@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
 export class UserEntity {
@@ -14,9 +14,9 @@ export class UserEntity {
   @Column({ default: 1 })
   version: number;
 
-  @CreateDateColumn({ type: 'bigint' })
+  @Column({ type: 'bigint' })
   createdAt: number;
 
-  @UpdateDateColumn({ type: 'bigint' })
+  @Column({ type: 'bigint' })
   updatedAt: number;
 }
