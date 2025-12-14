@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteItemEntity } from './entities/favorite-item.entity';
@@ -21,46 +25,46 @@ export class FavoritesService {
     const favoriteItems = await this.favoriteRepository.find();
 
     const artistIds = favoriteItems
-      .filter(item => item.entityType === 'artist')
-      .map(item => item.entityId);
+      .filter((item) => item.entityType === 'artist')
+      .map((item) => item.entityId);
 
     const albumIds = favoriteItems
-      .filter(item => item.entityType === 'album')
-      .map(item => item.entityId);
+      .filter((item) => item.entityType === 'album')
+      .map((item) => item.entityId);
 
     const trackIds = favoriteItems
-      .filter(item => item.entityType === 'track')
-      .map(item => item.entityId);
+      .filter((item) => item.entityType === 'track')
+      .map((item) => item.entityId);
 
     const artists = await Promise.all(
-      artistIds.map(async id => {
+      artistIds.map(async (id) => {
         try {
           return await this.artistsService.findOne(id);
         } catch {
           return null;
         }
-      })
-    ).then(results => results.filter(artist => artist !== null));
+      }),
+    ).then((results) => results.filter((artist) => artist !== null));
 
     const albums = await Promise.all(
-      albumIds.map(async id => {
+      albumIds.map(async (id) => {
         try {
           return await this.albumsService.findOne(id);
         } catch {
           return null;
         }
-      })
-    ).then(results => results.filter(album => album !== null));
+      }),
+    ).then((results) => results.filter((album) => album !== null));
 
     const tracks = await Promise.all(
-      trackIds.map(async id => {
+      trackIds.map(async (id) => {
         try {
           return await this.tracksService.findOne(id);
         } catch {
           return null;
         }
-      })
-    ).then(results => results.filter(track => track !== null));
+      }),
+    ).then((results) => results.filter((track) => track !== null));
 
     return { artists, albums, tracks };
   }

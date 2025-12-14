@@ -18,7 +18,11 @@ export class ArtistsService {
   ) {}
 
   // Метод для установки зависимостей (будет вызван из модуля)
-  setDependencies(albumsService: any, tracksService: any, favoritesService: any) {
+  setDependencies(
+    albumsService: any,
+    tracksService: any,
+    favoritesService: any,
+  ) {
     this.albumsService = albumsService;
     this.tracksService = tracksService;
     this.favoritesService = favoritesService;
@@ -47,7 +51,7 @@ export class ArtistsService {
 
   async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
     const artist = await this.artistRepository.findOne({ where: { id } });
-    
+
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -58,7 +62,7 @@ export class ArtistsService {
 
   async remove(id: string): Promise<void> {
     const artist = await this.artistRepository.findOne({ where: { id } });
-    
+
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }

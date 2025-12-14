@@ -19,20 +19,22 @@ import { FavoritesService } from './favorites/favorites.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    
+
     // Подключение TypeORM
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.POSTGRES_PORT, 10),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
+      host: process.env.POSTGRES_HOST || 'localhost',
+      port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
+      username: process.env.POSTGRES_USER || 'postgres',
+      password: process.env.POSTGRES_PASSWORD || 'postgres',
+      database: process.env.POSTGRES_DB || 'home_library',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      migrations: [__dirname + '/migrations/*{.ts,.js}'],
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+      migrationsRun: process.env.TYPEORM_SYNCHRONIZE !== 'true',
       logging: true,
     }),
-    
+
     UsersModule,
     ArtistsModule,
     AlbumsModule,

@@ -7,4 +7,3 @@ export interface FavoritesResponse {
   albums: Album[];
   tracks: Track[];
 }
-

@@ -32,8 +32,13 @@ test
 Thumbs.db
 
 # Documentation
-README.md
+*.md
+!README.md
+docker-compose*.yml
 
 # Logs
 logs
 *.log
+
+# Docker
+Dockerfile*

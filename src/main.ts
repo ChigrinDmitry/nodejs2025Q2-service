@@ -12,14 +12,16 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe ({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Setup Swagger documentation
   const swaggerDocument = yaml.load(
-    fs.readFileSync(path.join(__dirname, '../doc/api.yaml'), 'utf8')
+    fs.readFileSync(path.join(__dirname, '../doc/api.yaml'), 'utf8'),
   );
   app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

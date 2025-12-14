@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
@@ -28,22 +32,25 @@ export class UsersService {
 
   async findAll(): Promise<Omit<User, 'password'>[]> {
     const users = await this.userRepository.find();
-    return users.map(user => this.excludePassword(user));
+    return users.map((user) => this.excludePassword(user));
   }
 
   async findOne(id: string): Promise<Omit<User, 'password'>> {
     const user = await this.userRepository.findOne({ where: { id } });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    
+
     return this.excludePassword(user);
   }
 
-  async updatePassword(id: string, updatePasswordDto: UpdatePasswordDto): Promise<Omit<User, 'password'>> {
+  async updatePassword(
+    id: string,
+    updatePasswordDto: UpdatePasswordDto,
+  ): Promise<Omit<User, 'password'>> {
     const user = await this.userRepository.findOne({ where: { id } });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -62,13 +69,14 @@ export class UsersService {
 
   async remove(id: string): Promise<void> {
     const result = await this.userRepository.delete(id);
-    
+
     if (result.affected === 0) {
       throw new NotFoundException('User not found');
     }
   }
 
   private excludePassword(user: UserEntity): Omit<User, 'password'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

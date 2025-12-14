@@ -26,7 +26,25 @@ COPY . .
 # Собираем приложение
 RUN npm run build
 
-# Этап 3: Production образ
+# Этап 3: Development образ
+FROM node:24.10.0-alpine AS development
+
+WORKDIR /app
+
+# Устанавливаем зависимости
+COPY package*.json ./
+RUN npm ci
+
+# Копируем исходный код
+COPY . .
+
+# Открываем порт
+EXPOSE 4000
+
+# Запускаем приложение в dev режиме
+CMD ["npm", "run", "start:dev"]
+
+# Этап 4: Production образ
 FROM node:24.10.0-alpine AS production
 
 WORKDIR /app

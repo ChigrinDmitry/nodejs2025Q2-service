@@ -44,7 +44,7 @@ export class TracksService {
 
   async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
     const track = await this.trackRepository.findOne({ where: { id } });
-    
+
     if (!track) {
       throw new NotFoundException('Track not found');
     }
@@ -55,7 +55,7 @@ export class TracksService {
 
   async remove(id: string): Promise<void> {
     const track = await this.trackRepository.findOne({ where: { id } });
-    
+
     if (!track) {
       throw new NotFoundException('Track not found');
     }
@@ -70,7 +70,7 @@ export class TracksService {
 
   async removeArtistReference(artistId: string): Promise<void> {
     const tracks = await this.trackRepository.find({ where: { artistId } });
-    
+
     for (const track of tracks) {
       track.artistId = null;
       await this.trackRepository.save(track);
@@ -79,7 +79,7 @@ export class TracksService {
 
   async removeAlbumReference(albumId: string): Promise<void> {
     const tracks = await this.trackRepository.find({ where: { albumId } });
-    
+
     for (const track of tracks) {
       track.albumId = null;
       await this.trackRepository.save(track);
