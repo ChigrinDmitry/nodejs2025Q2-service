@@ -1,15 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ArtistEntity } from './entities/artist.entity';
 import { Artist } from './interfaces/artist.interface';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ArtistsService {
-  private artists: Artist[] = [];
   private albumsService: any;
   private tracksService: any;
   private favoritesService: any;
+
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private readonly artistRepository: Repository<ArtistEntity>,
+  ) {}
 
   // Метод для установки зависимостей (будет вызван из модуля)
   setDependencies(albumsService: any, tracksService: any, favoritesService: any) {
@@ -18,62 +24,61 @@ export class ArtistsService {
     this.favoritesService = favoritesService;
   }
 
-  create(createArtistDto: CreateArtistDto): Artist {
-    const artist: Artist = {
-      id: randomUUID(),
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
+    const artist = this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-    };
+    });
 
-    this.artists.push(artist);
-    return artist;
+    return await this.artistRepository.save(artist);
   }
 
-  findAll(): Artist[] {
-    return this.artists;
+  async findAll(): Promise<Artist[]> {
+    return await this.artistRepository.find();
   }
 
-  findOne(id: string): Artist {
-    const artist = this.artists.find(artist => artist.id === id);
+  async findOne(id: string): Promise<Artist> {
+    const artist = await this.artistRepository.findOne({ where: { id } });
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
     return artist;
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    const artist = this.artists.find(artist => artist.id === id);
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
+    const artist = await this.artistRepository.findOne({ where: { id } });
     
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
 
     Object.assign(artist, updateArtistDto);
-    return artist;
+    return await this.artistRepository.save(artist);
   }
 
-  remove(id: string): void {
-    const index = this.artists.findIndex(artist => artist.id === id);
+  async remove(id: string): Promise<void> {
+    const artist = await this.artistRepository.findOne({ where: { id } });
     
-    if (index === -1) {
+    if (!artist) {
       throw new NotFoundException('Artist not found');
     }
 
     // Cascade delete: remove references and from favorites
     if (this.albumsService) {
-      this.albumsService.removeArtistReference(id);
+      await this.albumsService.removeArtistReference(id);
     }
     if (this.tracksService) {
-      this.tracksService.removeArtistReference(id);
+      await this.tracksService.removeArtistReference(id);
     }
     if (this.favoritesService) {
-      this.favoritesService.removeArtistById(id);
+      await this.favoritesService.removeArtistById(id);
     }
 
-    this.artists.splice(index, 1);
+    await this.artistRepository.remove(artist);
   }
 
-  exists(id: string): boolean {
-    return this.artists.some(artist => artist.id === id);
+  async exists(id: string): Promise<boolean> {
+    const count = await this.artistRepository.count({ where: { id } });
+    return count > 0;
   }
 }

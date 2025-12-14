@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
-import { Favorites } from './interfaces/favorites.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { FavoriteItemEntity } from './entities/favorite-item.entity';
 import { FavoritesResponse } from './interfaces/favorites-response.interface';
 import { ArtistsService } from '../artists/artists.service';
 import { AlbumsService } from '../albums/albums.service';
@@ -7,124 +9,182 @@ import { TracksService } from '../tracks/tracks.service';
 
 @Injectable()
 export class FavoritesService {
-  private favorites: Favorites = {
-    artists: [],
-    albums: [],
-    tracks: [],
-  };
-
   constructor(
+    @InjectRepository(FavoriteItemEntity)
+    private readonly favoriteRepository: Repository<FavoriteItemEntity>,
     private readonly artistsService: ArtistsService,
     private readonly albumsService: AlbumsService,
     private readonly tracksService: TracksService,
   ) {}
 
-  findAll(): FavoritesResponse {
-    const artists = this.favorites.artists
-      .map(id => {
-        try {
-          return this.artistsService.findOne(id);
-        } catch {
-          return null;
-        }
-      })
-      .filter(artist => artist !== null);
+  async findAll(): Promise<FavoritesResponse> {
+    const favoriteItems = await this.favoriteRepository.find();
 
-    const albums = this.favorites.albums
-      .map(id => {
-        try {
-          return this.albumsService.findOne(id);
-        } catch {
-          return null;
-        }
-      })
-      .filter(album => album !== null);
+    const artistIds = favoriteItems
+      .filter(item => item.entityType === 'artist')
+      .map(item => item.entityId);
 
-    const tracks = this.favorites.tracks
-      .map(id => {
+    const albumIds = favoriteItems
+      .filter(item => item.entityType === 'album')
+      .map(item => item.entityId);
+
+    const trackIds = favoriteItems
+      .filter(item => item.entityType === 'track')
+      .map(item => item.entityId);
+
+    const artists = await Promise.all(
+      artistIds.map(async id => {
         try {
-          return this.tracksService.findOne(id);
+          return await this.artistsService.findOne(id);
         } catch {
           return null;
         }
       })
-      .filter(track => track !== null);
+    ).then(results => results.filter(artist => artist !== null));
+
+    const albums = await Promise.all(
+      albumIds.map(async id => {
+        try {
+          return await this.albumsService.findOne(id);
+        } catch {
+          return null;
+        }
+      })
+    ).then(results => results.filter(album => album !== null));
+
+    const tracks = await Promise.all(
+      trackIds.map(async id => {
+        try {
+          return await this.tracksService.findOne(id);
+        } catch {
+          return null;
+        }
+      })
+    ).then(results => results.filter(track => track !== null));
 
     return { artists, albums, tracks };
   }
 
-  addTrack(id: string): void {
-    if (!this.tracksService.exists(id)) {
+  async addTrack(id: string): Promise<void> {
+    const exists = await this.tracksService.exists(id);
+    if (!exists) {
       throw new UnprocessableEntityException('Track does not exist');
     }
 
-    if (!this.favorites.tracks.includes(id)) {
-      this.favorites.tracks.push(id);
+    const existing = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'track' },
+    });
+
+    if (!existing) {
+      const favorite = this.favoriteRepository.create({
+        entityId: id,
+        entityType: 'track',
+      });
+      await this.favoriteRepository.save(favorite);
     }
   }
 
-  removeTrack(id: string): void {
-    const index = this.favorites.tracks.indexOf(id);
-    if (index === -1) {
+  async removeTrack(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'track' },
+    });
+
+    if (!favorite) {
       throw new NotFoundException('Track is not in favorites');
     }
-    this.favorites.tracks.splice(index, 1);
+
+    await this.favoriteRepository.remove(favorite);
   }
 
-  addAlbum(id: string): void {
-    if (!this.albumsService.exists(id)) {
+  async addAlbum(id: string): Promise<void> {
+    const exists = await this.albumsService.exists(id);
+    if (!exists) {
       throw new UnprocessableEntityException('Album does not exist');
     }
 
-    if (!this.favorites.albums.includes(id)) {
-      this.favorites.albums.push(id);
+    const existing = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'album' },
+    });
+
+    if (!existing) {
+      const favorite = this.favoriteRepository.create({
+        entityId: id,
+        entityType: 'album',
+      });
+      await this.favoriteRepository.save(favorite);
     }
   }
 
-  removeAlbum(id: string): void {
-    const index = this.favorites.albums.indexOf(id);
-    if (index === -1) {
+  async removeAlbum(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'album' },
+    });
+
+    if (!favorite) {
       throw new NotFoundException('Album is not in favorites');
     }
-    this.favorites.albums.splice(index, 1);
+
+    await this.favoriteRepository.remove(favorite);
   }
 
-  addArtist(id: string): void {
-    if (!this.artistsService.exists(id)) {
+  async addArtist(id: string): Promise<void> {
+    const exists = await this.artistsService.exists(id);
+    if (!exists) {
       throw new UnprocessableEntityException('Artist does not exist');
     }
 
-    if (!this.favorites.artists.includes(id)) {
-      this.favorites.artists.push(id);
+    const existing = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'artist' },
+    });
+
+    if (!existing) {
+      const favorite = this.favoriteRepository.create({
+        entityId: id,
+        entityType: 'artist',
+      });
+      await this.favoriteRepository.save(favorite);
     }
   }
 
-  removeArtist(id: string): void {
-    const index = this.favorites.artists.indexOf(id);
-    if (index === -1) {
+  async removeArtist(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'artist' },
+    });
+
+    if (!favorite) {
       throw new NotFoundException('Artist is not in favorites');
     }
-    this.favorites.artists.splice(index, 1);
+
+    await this.favoriteRepository.remove(favorite);
   }
 
-  removeArtistById(id: string): void {
-    const index = this.favorites.artists.indexOf(id);
-    if (index !== -1) {
-      this.favorites.artists.splice(index, 1);
+  async removeArtistById(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'artist' },
+    });
+
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
     }
   }
 
-  removeAlbumById(id: string): void {
-    const index = this.favorites.albums.indexOf(id);
-    if (index !== -1) {
-      this.favorites.albums.splice(index, 1);
+  async removeAlbumById(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'album' },
+    });
+
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
     }
   }
 
-  removeTrackById(id: string): void {
-    const index = this.favorites.tracks.indexOf(id);
-    if (index !== -1) {
-      this.favorites.tracks.splice(index, 1);
+  async removeTrackById(id: string): Promise<void> {
+    const favorite = await this.favoriteRepository.findOne({
+      where: { entityId: id, entityType: 'track' },
+    });
+
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
     }
   }
 }
